@@ -15,6 +15,9 @@ const state = {
     lendBook: false,
     returnBook: false
   },
+  wait: false,
+  error: false,
+  success: false,
   errorMessage: "",
   successMessage: ""
 }
@@ -26,12 +29,21 @@ const mutations = {
 
   setLoading (state, { type, v }) {
     state.loading[type] = v;
+    state.wait = v;
   },
-  setErrorMessage (state, { message }) {
+  setErrorMessage (state, { message, show_window }) {
     state.errorMessage = message;
+    state.error = show_window;
   },
-  setSuccessMessage (state, { message }) {
+  setSuccessMessage (state, { message, show_window }) {
     state.successMessage = message;
+    state.success = show_window;
+  },
+  toggleDialog_error (state) {
+    state.error = !state.error;
+  },
+  toggleDialog_success (state) {
+    state.success = !state.success;
   },
 
   saveSettings (state, {settings}) {
@@ -63,7 +75,7 @@ const actions = {
       const res = await GASAPI.getBookList(bookListStartsAt, bookListEndsAt)
       commit('setBookList', { list: res.data.list })
     } catch (e) {
-      commit('setErrorMessage', { message: e })
+      commit('setErrorMessage', { message: e, show_window: true })
       commit('setBookList', { list: {} })
     } finally {
       commit('setLoading', { type, v: false })
@@ -76,9 +88,9 @@ const actions = {
     commit('setLoading', { type, v: true })
     try {
       await GASAPI.lendBook(userID, bookUUID)
-      commit('setSuccessMessage', { message: "貸出処理が完了しました" })
+      commit('setSuccessMessage', { message: "貸出処理が完了しました", show_window: true })
     } catch (e) {
-      commit('setErrorMessage', { message: e })
+      commit('setErrorMessage', { message: e, show_window: true })
     } finally {
       commit('setLoading', { type, v: false })
     }
@@ -89,9 +101,9 @@ const actions = {
     commit('setLoading', { type, v: true })
     try {
       await GASAPI.returnBook(bookUUID)
-      commit('setSuccessMessage', { message: "返却処理が完了しました" })
+      commit('setSuccessMessage', { message: "返却処理が完了しました", show_window: true })
     } catch (e) {
-      commit('setErrorMessage', { message: e })
+      commit('setErrorMessage', { message: e, show_window: true })
     } finally {
       commit('setLoading', { type, v: false })
     }
