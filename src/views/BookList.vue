@@ -46,7 +46,7 @@ export default {
   },
   data (){
     return {
-      search: "",
+      search: this.$route.query.q ? this.$route.query.q :"",
       tableData: [],
     }
   },
