@@ -32,6 +32,12 @@
             x-large
             @click="onClickSearch"
           >
+            <v-icon
+              black
+              left
+            >
+              mdi-magnify-scan
+            </v-icon>
             詳細検索
           </v-btn>
         </v-col>
@@ -41,6 +47,12 @@
             x-large
             @click="onClickRequest"
           >
+            <v-icon
+              black
+              left
+            >
+              mdi-email-fast
+            </v-icon>
             書籍リクエスト
           </v-btn>
         </v-col>

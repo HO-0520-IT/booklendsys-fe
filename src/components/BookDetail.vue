@@ -70,6 +70,7 @@
 										<td>
 											<v-btn 
 												:to="{name: 'LendReturn', query: {modeSelect: selectModeText(item.isLent), UUID: item.UUID}}"
+												:color="item.isLent == '-1' ? 'orange lighten-3' : 'light-blue lighten-3'"
 											>
 												{{displayButtonText(item.isLent)}}
 											</v-btn>
