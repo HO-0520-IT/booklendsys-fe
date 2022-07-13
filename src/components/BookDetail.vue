@@ -68,7 +68,7 @@
 								<template v-slot:item="{item}">
 									<tr>
 										<td>
-											<v-btn color="green" dark 
+											<v-btn 
 												:to="{name: 'LendReturn', query: {modeSelect: selectModeText(item.isLent), UUID: item.UUID}}"
 											>
 												{{displayButtonText(item.isLent)}}

@@ -1,6 +1,8 @@
 <template>
   <div>
-    <h1>書籍登録・編集・削除画面</h1>
+    <!--<h1>書籍登録・編集・削除画面</h1>-->
+    <h1>書籍登録画面</h1>
+    <!--
     <v-radio-group
       row
       v-model="modeSelect"
@@ -11,6 +13,7 @@
       <v-radio label="編集" value="edit"/>
       <v-radio label="削除" value="remove"/>
     </v-radio-group>
+    -->
     <v-text-field
       v-if="showUUIDField"
       label="UUID"
@@ -31,7 +34,7 @@
     >
       <v-col cols="8">
         <v-text-field
-          v-model="bookISBN"
+          v-model="bookID"
         >
         <template v-slot:label>
           <div>
@@ -42,7 +45,11 @@
       </v-col>
       <v-spacer/>
       <v-col class="text-right" cols="4">
-        <v-btn>
+        <v-btn
+          color="green"
+          dark
+          @click="onClickGetInformationButton"
+        >
           情報取得
         </v-btn>
       </v-col>
@@ -90,9 +97,9 @@ export default {
   name: 'EditBook',
   data (){
     return {
-      showUUIDField: this.$route.query.modeSelect=="register" ? false : true,
+      modeSelect: this.$route.query.modeSelect ? this.$route.query.modeSelect : "register",
+      showUUIDField: (this.$route.query.modeSelect=="register"  || !this.$route.query.modeSelect) ? false : true,
       showDataField: this.$route.query.modeSelect=="remove" ? false : true,
-      modeSelect: this.$route.query.modeSelect ? this.$route.query.modeSelect : "edit",
       bookTypeSelect: 'CBook' ,
       bookTypeSelectItems: [
         { bookTypeName: '書籍', bookType: 'CBook' },
@@ -158,6 +165,11 @@ export default {
 			} else if (this.modeSelect == "lend") {
 				this.oplendBook(item);
 			}
+    },
+    onClickGetInformationButton() {
+      let item = {};
+      item.bookID = this.bookID;
+      this.oplendBook(item);
     },
   }
 }
