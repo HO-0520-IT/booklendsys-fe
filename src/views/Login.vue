@@ -33,9 +33,20 @@
                 v-model="settings.APIURL"
                 :rules="rules.APIURL"
                 label="API URL"
+                prepend-icon="mdi-server"
                 required
               ></v-text-field>
             </v-form>
+            <!--
+            <v-form>
+              <v-text-field
+                v-model="settings.username"
+                label="ユーザー名"
+                prepend-icon="mdi-account"
+                required
+              ></v-text-field>
+            </v-form>
+            -->
           </v-card-text>
           <v-card-actions>
             <v-btn
@@ -52,11 +63,33 @@
       </v-row>
       </v-container>
     </v-main>
+    <v-dialog
+      v-model="dialog_wait"
+      persistent
+      width="500"
+    >
+      <v-card>
+        <v-card-title>
+          <span class="headline">
+            ログイン中です
+          </span>
+        </v-card-title>
+        <div class="text-center">
+          <v-progress-circular
+            indeterminate
+            color="green"
+          ></v-progress-circular>
+          <v-card-text>
+            ログイン中です。しばらくお待ちください。
+          </v-card-text>
+        </div>
+      </v-card>
+    </v-dialog>
   </v-app>
 </template>
 
 <script>
-import { mapState } from 'vuex';
+import { mapActions, mapState } from 'vuex';
 
 export default {
   name: "Login",
@@ -71,7 +104,10 @@ export default {
       dialog_wait: false,
       settings: {
         APIURL: this.$route.query.apiurl != undefined ? this.$route.query.apiurl : (this.$store.state.settings.APIURL != undefined ? this.$store.state.settings.APIURL : ""),
+        username: this.$route.query.username != undefined ? this.$route.query.username : (this.$store.state.settings.username != undefined ? this.$store.state.settings.username : ""),
         password: this.$route.query.password != undefined ? this.$route.query.password : (this.$store.state.settings.password != undefined ? this.$store.state.settings.password : ""),
+        message: this.$store.state.settings.message != undefined ? this.$store.state.settings.message : "",
+        RequestFormURL: this.$store.state.settings.RequestFormURL != undefined ? this.$store.state.settings.RequestFormURL : "",
       },
       rules: {
         APIURL: [
@@ -83,6 +119,8 @@ export default {
   },
   computed: {
     ...mapState({
+      loading: state => state.loading.getBasicInfo,
+      basicInfo: state => state.basicInfo,
       appName: state => state.settings.appName,
       wait: state => state.wait,
       errorMessage: state => state.errorMessage,
@@ -105,6 +143,9 @@ export default {
     },
   },
   methods :{
+    ...mapActions([
+      "opgetBasicInfo",
+    ]),
     close_dialog_error () {
       this.$store.commit("toggleDialog_error")
     },
@@ -112,8 +153,11 @@ export default {
       this.$store.commit("toggleDialog_success")
     },
     async onClickLogin () {
+      await this.opgetBasicInfo();
+      this.settings.message = this.basicInfo.message;
+      this.settings.RequestFormURL = this.basicInfo.RequestFormURL;
       await new Promise(resolve =>{
-        this.$store.commit("toggleWait", true);
+        //this.$store.commit("toggleWait", true);
         this.$store.dispatch('saveSettings', { settings: this.settings });
         resolve();
       }).then(() => {

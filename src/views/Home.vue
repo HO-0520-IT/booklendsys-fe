@@ -3,7 +3,7 @@
     <v-container fill-height>
       <v-row>
         <v-col>
-          <h1>ようこそ</h1>
+          <div class="text-h3">ようこそ</div>
         </v-col>
       </v-row>
       <v-row>
@@ -12,6 +12,7 @@
             v-model="smartSearch"
             label="かんたん検索"
             solo
+            @keyup.enter="onClickSmartSearch"
           >
             <template v-slot:append>
               <v-btn
@@ -26,6 +27,7 @@
             </template>
           </v-text-field>
         </v-col>
+        <!--
         <v-col cols="6" md="2">
           <v-btn
             block
@@ -41,7 +43,8 @@
             詳細検索
           </v-btn>
         </v-col>
-        <v-col cols="6" md="2">
+        -->
+        <v-col cols="12" md="4">
           <v-btn
             block
             x-large
@@ -64,30 +67,19 @@
           fill-height
         >
           <v-row>
-            <v-col
-              cols="6"
-              md="12"
-            >
-              <v-btn
-                block
-                x-large
-                @click="onClickLend"
-                color="orange lighten-3"
+            <v-col cols="12">
+              <v-btn 
+                height="100%"
+                width="100%"
+                :to="{name: 'CodeSearch'}"
+                class="text-center"
               >
-                貸出
-              </v-btn>
-            </v-col>
-            <v-col
-              cols="6"
-              md="12"
-            >
-              <v-btn
-                block
-                x-large
-                @click="onClickReturn"
-                color="light-blue lighten-3"
-              >
-                返却
+                <v-icon>mdi-line-scan</v-icon>
+                <v-icon>mdi-barcode</v-icon>
+                <v-icon>mdi-qrcode</v-icon>
+                バーコード<br>
+                QRコード<br>
+                を使用した手続き
               </v-btn>
             </v-col>
           </v-row>
@@ -97,9 +89,10 @@
             <v-card-title>
               お知らせ
             </v-card-title>
+            <v-card-text>
+              <div class="body-1" style="white-space: pre-line;">{{message}}</div>
+            </v-card-text>
           </v-card>
-          <v-data-table>
-          </v-data-table>
         </v-col>
       </v-row>
     </v-container>
@@ -108,6 +101,29 @@
 
 <script>
 export default {
-  name: 'Home'
+  name: 'Home',
+  data() {
+    return {
+      smartSearch: '',
+      message: this.$store.state.settings.message != undefined ? this.$store.state.settings.message : "",
+      RequestFormURL: this.$store.state.settings.RequestFormURL != undefined ? this.$store.state.settings.RequestFormURL : "",
+    };
+  },
+  methods: {
+    onClickSmartSearch: function () {
+      this.$router.push({
+        name: 'BookList',
+        query: {
+          q: this.smartSearch
+        }
+      });
+    },
+    onClickRequest: function () {
+      //this.$store.state.settings.RequestFormURLにリクエストフォームのURLが設定されている場合はそちらを使用する
+      if (this.$store.state.settings.RequestFormURL != undefined) {
+        window.open(this.$store.state.settings.RequestFormURL, '_blank');
+      } 
+    },
+  }
 }
 </script>

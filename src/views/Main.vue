@@ -34,6 +34,7 @@
           v-for="(item, i) in items"
           :key="i"
           :to="item.link"
+          :href="item.link_external"
         >
           <v-list-item-icon>
             <v-icon v-text="item.icon"></v-icon>
@@ -176,7 +177,9 @@ export default {
       dialog_wait: false,
       items: [
         { text: "蔵書一覧", icon: "mdi-book", link: "/booklist" },
-        { text: "ユーザー一覧", icon: "mdi-account", link: "/userlist" },
+        { text: "コードを使用した手続き", icon: "mdi-line-scan", link: "/codesearch" },
+        { text: "本の追加", icon: "mdi-book-plus", link: "/editbook" },
+        { text: "書籍リクエスト", icon: "mdi-email-fast", link_external: this.$store.state.settings.RequestFormURL != undefined ? this.$store.state.settings.RequestFormURL : "" },
 
       ]
     }

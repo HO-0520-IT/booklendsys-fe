@@ -11,6 +11,8 @@ const state = {
     password: ""
   },
   loading: {
+    getBasicInfo: false,
+    addBook: false,
     getBookList: false,
     lendBook: false,
     returnBook: false
@@ -25,6 +27,9 @@ const state = {
 const mutations = {
   setBookList (state, {list}) {
     state.bookList = list;
+  },
+  setBasicInfo (state, {basicInfo}) {
+    state.basicInfo = basicInfo;
   },
 
   setLoading (state, { type, v }) {
@@ -66,6 +71,20 @@ const mutations = {
 }
 
 const actions = {
+  async opgetBasicInfo ({ commit }) {
+    const type = "getBasicInfo";
+    commit('setLoading', { type, v: true });
+
+    try {
+      const res = await GASAPI.getBasicInfo()
+      commit('setBasicInfo', { basicInfo: res.data });
+    } catch (e) {
+      commit('setErrorMessage', { message: e, show_window: true })
+    } finally {
+      commit('setLoading', { type, v: false })
+    }
+  },
+
   async opgetBookList ({ commit }, item) {
     const bookListStartsAt = item.bookListStartsAt;
     const bookListEndsAt = item.bookListEndsAt;
@@ -73,6 +92,20 @@ const actions = {
     commit('setLoading', { type, v: true })
     try {
       const res = await GASAPI.getBookList(bookListStartsAt, bookListEndsAt)
+      commit('setBookList', { list: res.data.list })
+    } catch (e) {
+      commit('setErrorMessage', { message: e, show_window: true })
+      commit('setBookList', { list: {} })
+    } finally {
+      commit('setLoading', { type, v: false })
+    }
+  },
+  async opgetBookUUIDorID ({ commit }, item) {
+    const bookUUIDorID = item.bookUUIDorID;
+    const type = 'getBookUUIDorID'
+    commit('setLoading', { type, v: true })
+    try {
+      const res = await GASAPI.getBookUUIDorID(bookUUIDorID)
       commit('setBookList', { list: res.data.list })
     } catch (e) {
       commit('setErrorMessage', { message: e, show_window: true })
@@ -108,7 +141,33 @@ const actions = {
       commit('setLoading', { type, v: false })
     }
   },
+  async opaddBook ({ commit }, item) {
+    var bookStockNum = item.bookStockNum ? item.bookStockNum : 1;
+    const bookType = item.bookType;
+    const bookID = item.bookID;
+    const bookTitle = item.bookTitle;
+    const bookAuthor = item.bookAuthor;
+    const bookPublishedYear = item.bookPublishedYear;
+    const bookPublishedMonth = item.bookPublishedMonth;
+    const bookDesc = item.bookDesc;
+    const bookImageURL = item.bookImageURL;
+    const bookComment = item.bookComment;
+    const type = 'addBook'
+    commit('setLoading', { type, v: true })
 
+    try {
+      await GASAPI.addBook(bookStockNum, bookType, bookID, bookTitle, bookAuthor, bookPublishedYear, bookPublishedMonth, bookDesc, bookImageURL, bookComment)
+      commit('setSuccessMessage', { message: "本の追加処理が完了しました", show_window: true })
+    } catch (e) {
+      commit('setErrorMessage', { message: e, show_window: true })
+    } finally {
+      commit('setLoading', { type, v: false })
+    }
+  },
+
+  async setErrorMessage ({ commit }, item) {
+    commit('setErrorMessage', item)
+  },
   saveSettings ({ commit }, { settings }) {
     commit('saveSettings', { settings });
   },

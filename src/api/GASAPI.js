@@ -22,6 +22,13 @@ const setPassword = pass => {
   password = pass;
 }
 
+const getBasicInfo = () => {
+  return GASAPI.post("",{
+    opmode: "getBasicInfo",
+    password,
+  });
+}
+
 const getBookList = (bookListStartsAt, bookListEndsAt) => {
   return GASAPI.post("", {
     opmode: "getBookList",
@@ -29,6 +36,35 @@ const getBookList = (bookListStartsAt, bookListEndsAt) => {
     params: {
       bookListStartsAt,
       bookListEndsAt
+    }
+  });
+}
+
+const getBookUUIDorID = (bookUUIDorID) => {
+  return GASAPI.post("", {
+    opmode: "getBookUUIDorID",
+    password,
+    params: {
+      bookUUIDorID
+    }
+  });
+}
+
+const addBook = (bookStockNum, bookType, bookID, bookTitle, bookAuthor, bookPublishedYear, bookPublishedMonth, bookDesc, bookImageURL, bookComment) => {
+  return GASAPI.post("", {
+    opmode: "addBook",
+    password,
+    params: {
+      bookStockNum,
+      bookType,
+      bookID,
+      bookTitle,
+      bookAuthor,
+      bookPublishedYear,
+      bookPublishedMonth,
+      bookDesc,
+      bookImageURL,
+      bookComment
     }
   });
 }
@@ -57,7 +93,10 @@ const returnBook = (bookUUID) => {
 export default {
   setURL,
   setPassword,
+  getBasicInfo,
   getBookList,
+  getBookUUIDorID,
+  addBook,
   lendBook,
   returnBook
 }

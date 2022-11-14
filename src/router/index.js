@@ -7,6 +7,7 @@ import ConnectSettings from '../views/ConnectSettings.vue'
 import BookList from '../views/BookList.vue'
 import LendReturn from '../views/LendReturn.vue'
 import EditBook from '../views/EditBook.vue'
+import CodeSearch from '../views/CodeSearch.vue'
 Vue.use(VueRouter)
 
 const routes = [
@@ -49,6 +50,11 @@ const routes = [
         path: 'editbook',
         name: 'EditBook',
         component: EditBook
+      },
+      {
+        path: 'codesearch',
+        name: 'CodeSearch',
+        component: CodeSearch
       },
     ]
   }

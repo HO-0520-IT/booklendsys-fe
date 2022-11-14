@@ -24,7 +24,6 @@
       label="種類"
       :items="bookTypeSelectItems"
       v-model="bookTypeSelect"
-      @change="onBookTypeSelect"
       item-text="bookTypeName"
       item-value="bookType"
     >
@@ -35,6 +34,7 @@
       <v-col cols="8">
         <v-text-field
           v-model="bookID"
+          @keyup.enter="onClickGetInformationButton"
         >
         <template v-slot:label>
           <div>
@@ -64,16 +64,48 @@
       label="著者"
       v-model="bookAuthor"
     />
+    <!--
     <v-text-field
       v-if="showDataField"
       label="出版社"
       v-model="bookPublisher"
     />
+    -->
+    <v-row
+      v-if="showDataField"
+    >
+      <v-col
+        cols="6"
+      >
+        <v-text-field
+          label="出版年"
+          v-model="bookPublishedYear"
+        />
+      </v-col>
+      <v-col
+        cols="6"
+      >
+        <v-text-field
+          label="出版月"
+          v-model="bookPublishedMonth"
+        />
+      </v-col>
+    </v-row>
     <v-text-field
       v-if="showDataField"
       label="画像 URL"
-      v-model="bookURL"
+      v-model="bookImageURL"
     />
+    <v-textarea
+      v-if="showDataField"
+      v-model="bookDesc"
+    >
+      <template v-slot:label>
+        <div>
+          説明
+        </div>
+      </template>
+    </v-textarea>
     <v-textarea
       v-if="showDataField"
       v-model="bookComment"
@@ -92,6 +124,8 @@
 
 <script>
 import { mapState, mapActions } from 'vuex';
+//axios
+import axios from 'axios';
 
 export default {
   name: 'EditBook',
@@ -108,17 +142,26 @@ export default {
         { bookTypeName: '同人誌', bookType: 'Dojin' },
         { bookTypeName: 'その他', bookType: '' },
       ],
+      bookID: this.$route.query.bookID ? this.$route.query.bookID : "",
+      bookTitle: this.$route.query.bookTitle ? this.$route.query.bookTitle : "",
+      bookAuthor: this.$route.query.bookAuthor ? this.$route.query.bookAuthor : "",
+      bookPublisher: this.$route.query.bookPublisher ? this.$route.query.bookPublisher : "",
+      bookPublishedYear: this.$route.query.bookPublishedYear ? this.$route.query.bookPublishedYear : "",
+      bookPublishedMonth: this.$route.query.bookPublishedMonth ? this.$route.query.bookPublishedMonth : "",
+      bookImageURL: this.$route.query.bookImageURL ? this.$route.query.bookImageURL : "",
+      bookDesc: "",
+      bookComment: this.$route.query.bookComment ? this.$route.query.bookComment : "",
+      UUID: this.$route.query.UUID ? this.$route.query.UUID : "",
     }
   },
 	computed: {
     ...mapState({
-      loading: state => state.loading.fetch,
+      loading: state => state.loading.addBook,
     }),
   },
   methods: {
     ...mapActions([
-      "oplendBook",
-      "opreturnBook"
+      "opaddBook",
     ]),
     displayIDText(bookTypeSelect) {
       if (bookTypeSelect == 'CBook') {
@@ -158,18 +201,92 @@ export default {
 		},
     onClickRunButton() {
       let item = {};
-      item.bookUUID = this.UUID;
-      item.userID = this.userID;
-			if (this.modeSelect == "return") {
-				this.opreturnBook(item);
-			} else if (this.modeSelect == "lend") {
-				this.oplendBook(item);
-			}
+      item.bookType = this.bookTypeSelect;
+      item.bookID = this.bookID;
+      item.bookTitle = this.bookTitle;
+      item.bookAuthor = this.bookAuthor;
+      item.bookPublisher = this.bookPublisher;
+      item.bookPublishedYear = this.bookPublishedYear;
+      item.bookPublishedMonth = this.bookPublishedMonth;
+      item.bookImageURL = this.bookImageURL;
+      item.bookDesc = this.bookDesc;
+      item.bookComment = this.bookComment;
+      item.UUID = this.UUID;
+      if (this.modeSelect == "register") {
+        this.opaddBook(item);
+      } else if (this.modeSelect == "edit") {
+        //何もしない
+      } else if (this.modeSelect == "remove") {
+        //何もしない
+      }
     },
     onClickGetInformationButton() {
       let item = {};
       item.bookID = this.bookID;
-      this.oplendBook(item);
+      //OpenBDへのリクエストを行う
+      var endpoint = "https://api.openbd.jp/v1/get?isbn=" + this.bookID;
+      //axiosでリクエストを行う
+      axios.get(endpoint)
+        .then(response => {
+          //レスポンスを表示する
+          console.log(response.data);
+          if (response.data[0]["onix"]["DescriptiveDetail"]["TitleDetail"]["TitleElement"]["TitleText"]["content"] === undefined) {
+            this.bookTitle = "";
+          } else {
+            this.bookTitle = response.data[0]["onix"]["DescriptiveDetail"]["TitleDetail"]["TitleElement"]["TitleText"]["content"];
+            //サブタイトルもあれば結合
+            if ("Subtitle" in response.data[0]["onix"]["DescriptiveDetail"]["TitleDetail"]["TitleElement"]) {
+              this.bookTitle = this.bookTitle + " " + response.data[0]["onix"]["DescriptiveDetail"]["TitleDetail"]["TitleElement"]["Subtitle"]["content"];
+            }
+          }
+          if (response.data[0]["onix"]["DescriptiveDetail"]["Contributor"] === undefined) {
+            this.bookAuthor = "";
+          } else {
+            this.bookAuthor = function() {
+              var author = "";
+              for (var i = 0; i < response.data[0]["onix"]["DescriptiveDetail"]["Contributor"].length; i++) {
+                author += response.data[0]["onix"]["DescriptiveDetail"]["Contributor"][i]["PersonName"]["content"];
+                if (i < response.data[0]["onix"]["DescriptiveDetail"]["Contributor"].length - 1) {
+                  author += ",";
+                }
+              }
+              return author;
+            }();
+          }
+          if (response.data[0]["onix"]["PublishingDetail"]["Imprint"]["ImprintIdentifier"]["ImprintName"] === undefined) {
+            this.bookPublisher = "";
+          } else {
+            this.bookPublisher = response.data[0]["onix"]["PublishingDetail"]["Imprint"]["ImprintIdentifier"]["ImprintName"] ;
+          }
+          this.bookImageURL = "https://cover.openbd.jp/"+this.bookID+".jpg";
+          this.bookDesc = function() {
+            let comment = "";
+            if ("CollateralDetail" in response.data[0]["onix"]) {
+              for (var i = 0; i < response.data[0]["onix"]["CollateralDetail"]["TextContent"].length; i++) {
+                comment += response.data[0]["onix"]["CollateralDetail"]["TextContent"][i]["Text"];
+                if (i < response.data[0]["onix"]["CollateralDetail"]["TextContent"].length - 1) {
+                  comment += "\n";
+                }
+              }
+            } else {
+              comment = "";
+            }
+            return comment;
+          }();
+        })
+        .catch(error => {
+          //国会図書館APIから情報取得
+          /*
+          var endpoint = "https://iss.ndl.go.jp/api/sru?operation=searchRetrieve&recordPacking=xml&query=isbn=" + this.bookID;
+          //axiosでリクエストを行う
+          axios.get(endpoint)
+            .then(response => {
+
+            })
+          */
+          console.log(error);
+          return false;
+        });
     },
   }
 }
